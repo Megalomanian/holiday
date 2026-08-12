@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>成都·重庆 家庭旅行攻略</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<style>
+  :root { --bg:#f7f5f0; --card:#fff; --ink:#2b2b2b; --accent:#c2410c; --muted:#8a8278; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--ink); line-height:1.7; }
+  header { position:sticky; top:0; background:var(--card); border-bottom:1px solid #e5e0d8; padding:10px 16px; display:flex; align-items:center; gap:12px; z-index:10; }
+  header h1 { font-size:16px; margin:0; white-space:nowrap; }
+  nav { display:flex; gap:8px; margin-left:auto; flex-wrap:wrap; }
+  nav button { border:1px solid #ddd; background:#fff; padding:6px 12px; border-radius:999px; font-size:13px; cursor:pointer; }
+  nav button.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  main { max-width:880px; margin:0 auto; padding:20px 16px 60px; }
+  article { background:var(--card); border-radius:12px; padding:26px 22px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  article h1 { font-size:22px; border-bottom:2px solid var(--accent); padding-bottom:8px; }
+  article h2 { font-size:18px; margin-top:28px; border-left:4px solid var(--accent); padding-left:10px; }
+  article h3 { font-size:16px; }
+  article table { border-collapse:collapse; width:100%; font-size:13.5px; display:block; overflow-x:auto; margin:12px 0; }
+  article th, article td { border:1px solid #e5e0d8; padding:7px 9px; text-align:left; white-space:nowrap; }
+  article th { background:#faf7f2; }
+  article blockquote { border-left:4px solid var(--accent); margin:12px 0; padding:6px 14px; background:#fdf6ee; color:#6b5d4e; }
+  article code { background:#f0ece6; padding:1px 6px; border-radius:4px; font-size:13px; }
+  article pre { background:#f0ece6; padding:12px; border-radius:8px; overflow-x:auto; }
+  article a { color:var(--accent); }
+  .meta { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; }
+  .loading { text-align:center; color:var(--muted); padding:40px 0; }
+  .err { color:#b91c1c; text-align:center; padding:20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🐼 成都·重庆 家庭旅行攻略</h1>
+  <nav>
+    <button id="btn-guide" class="active">主攻略</button>
+    <button id="btn-article">知乎整理版</button>
+  </nav>
+</header>
+<main>
+  <article id="content"><div class="loading">加载中…</div></article>
+  <p class="meta">距离/车程为高德 API 实测 · 来源：github.com/Megalomanian/holiday</p>
+</main>
+<script>
+const DOCS = {
+  guide:   "上海出发成都重庆五天四晚攻略.md",
+  article: "成都重庆五日行程.md",
+};
+const $ = id => document.getElementById(id);
+const content = $("content");
+const cache = {};
+async function load(name) {
+  if (cache[name]) return cache[name];
+  const r = await fetch(DOCS[name]);
+  if (!r.ok) throw new Error("文档加载失败（HTTP " + r.status + "）");
+  const text = await r.text();
+  cache[name] = text;
+  return text;
+}
+async function show(name, btn) {
+  content.innerHTML = '<div class="loading">加载中…</div>';
+  try {
+    content.innerHTML = marked.parse(await load(name));
+  } catch (e) {
+    content.innerHTML = '<div class="err">' + e.message + "</div>";
+  }
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  window.scrollTo({ top: 0 });
+}
+$("btn-guide").onclick = () => show("guide", $("btn-guide"));
+$("btn-article").onclick = () => show("article", $("btn-article"));
+show("guide", $("btn-guide"));
+</script>
+</body>
+</html>
